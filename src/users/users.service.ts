@@ -34,8 +34,4 @@ export class UsersService {
     const deletedUser = await this.userModel.findByIdAndRemove(userId);
     return deletedUser;
   }
-
-  async setAvatar(uid, path) {
-    return 'lets say i just set avatar here for now...';
-  }
 }
