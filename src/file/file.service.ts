@@ -6,4 +6,8 @@ export class FileService {
   async saveAvatar(path) {
     return path;
   }
+
+  async savePicture(path) {
+    return path;
+  }
 }

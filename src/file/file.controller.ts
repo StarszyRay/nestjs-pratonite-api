@@ -40,9 +40,32 @@ export class FileController {
     return res.status(HttpStatus.OK).json({fileUrl: filePath});
   }
 
+  @Post('/picture')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './pictures'
+      , filename: (req, file, cb) => {
+        // Generating a 32 random chars long string
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        // Calling the callback passing the random name generated with the original extension name
+        cb(null, `${randomName}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadPicture(@UploadedFile() file, @Res() res) {
+    const filePath = await this.fileService.savePicture(`${this.SERVER_URL}/file/${file.path}`);
+    if (!filePath) {throw new InternalServerErrorException('Something went wrong with saving file. Could not get file path.'); }
+    return res.status(HttpStatus.OK).json({fileUrl: filePath});
+  }
+
   @Get('/avatars/:fileId')
   async serveAvatar(@Param('fileId') fileId, @Res() res): Promise<any> {
     res.sendFile(fileId, { root: 'avatars'});
+  }
+
+  @Get('/pictures/:fileId')
+  async servePicture(@Param('fileId') fileId, @Res() res): Promise<any> {
+    res.sendFile(fileId, { root: 'pictures'});
   }
 
 }
