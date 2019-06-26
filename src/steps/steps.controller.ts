@@ -18,6 +18,10 @@ export class StepsController {
 
   @Get(':uid')
   async getCreatorsSteps(@Param('uid') uid) {
-    return await this.stepService.getCreatorsSteps(uid);
+    const found = await this.stepService.getCreatorsSteps(uid);
+    if (!found) {
+      return [];
+    }
+    return found;
   }
 }

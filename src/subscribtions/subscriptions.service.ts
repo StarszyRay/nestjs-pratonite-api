@@ -18,26 +18,31 @@ export class SubscriptionsService {
       patronUid: createSubscriptionsDto.patronUid,
     };
     const found = await this.subscriptionsModel.findOne(conditions);
-    let ret;
-    let oldSubscriptionPrice = -1;
-    if (found === null) {
-      ret = await this.subscriptionsModel.create(createSubscriptionsDto);
-    } else {
-      oldSubscriptionPrice = found.step;
-      ret = await this.subscriptionsModel.replaceOne(conditions, createSubscriptionsDto);
-    }
     const stepsOfCreator: StepsInterface = await this.stepsModel.findOne( {creatorUid: createSubscriptionsDto.creatorUid});
-    stepsOfCreator.steps.forEach( step => {
-      if (createSubscriptionsDto.step === step.price) {
-        step.patronsNum += 1;
-      } else if (step.price === oldSubscriptionPrice && oldSubscriptionPrice !== -1) {
-        step.patronsNum -= 1;
+    let oldSubscriptionPrice = -1;
+    let replaced = null;
+    if (stepsOfCreator != null) {
+      if (found === null) {
+        replaced = await this.subscriptionsModel.create(createSubscriptionsDto);
+      } else {
+        oldSubscriptionPrice = found.step;
+        replaced = await this.subscriptionsModel.replaceOne(conditions, createSubscriptionsDto);
       }
-    });
-    return await this.stepsModel.replaceOne({creatorUid: stepsOfCreator.creatorUid}, stepsOfCreator);
+      stepsOfCreator.steps.forEach( step => {
+        if (createSubscriptionsDto.step === step.price) {
+          step.patronsNum += 1;
+        }
+        if (step.price === oldSubscriptionPrice && oldSubscriptionPrice !== -1) {
+          step.patronsNum -= 1;
+        }
+      });
+      await this.stepsModel.replaceOne({creatorUid: stepsOfCreator.creatorUid}, stepsOfCreator);
+    }
+    return replaced;
   }
 
   async getSubscriptions(patron: string): Promise<any> {
     return this.subscriptionsModel.find({patronUid: patron});
   }
+
 }

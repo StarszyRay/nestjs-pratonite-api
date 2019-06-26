@@ -60,7 +60,8 @@ export class FileController {
 
   @Get('/avatars/:fileId')
   async serveAvatar(@Param('fileId') fileId, @Res() res): Promise<any> {
-    res.sendFile(fileId, { root: 'avatars'});
+    const found = await this.fileService.serveAvater(fileId);
+    res.sendFile(found, { root: 'avatars'});
   }
 
   @Get('/pictures/:fileId')

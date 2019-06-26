@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Res } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionsDto } from './create-subscriptions.dto';
 
@@ -10,8 +10,12 @@ export class SubscriptionsController {
 
   @Post('')
   @HttpCode(201)
-  async addSubscription(@Body() createSubscriptionsDto: CreateSubscriptionsDto) {
-    return await this.subscriptionsService.addSubscription(createSubscriptionsDto);
+  async addSubscription(@Body() createSubscriptionsDto: CreateSubscriptionsDto, @Res() res) {
+    const result = await this.subscriptionsService.addSubscription(createSubscriptionsDto);
+    if (!result) {
+      throw new NotFoundException('Creator of creatorUid does not exist!');
+    }
+    return res.status(HttpStatus.OK).json(result);
   }
 
   @Get(':patron')
